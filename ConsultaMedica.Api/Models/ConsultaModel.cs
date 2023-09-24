@@ -15,7 +15,7 @@ public class ConsultaModel
     [DataType(DataType.Date)]
     [Column(TypeName = "Data Consulta")]
     public DateTime DataConsulta { get; set; }
-
+    
     [Required]
     [StringLength(50)]
     [Column(TypeName = "Tipo Consulta")]
