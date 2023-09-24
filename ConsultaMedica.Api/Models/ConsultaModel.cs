@@ -33,4 +33,8 @@ public class ConsultaModel
     [Required]
     [Column(TypeName = "Medico")]
     public MedicoModel? Medico { get; set; }
+
+    [Required]
+    [Column(TypeName = "Recepcionista")]
+    public RecepcionistaModel? Recepcionista { get; set; }
 }

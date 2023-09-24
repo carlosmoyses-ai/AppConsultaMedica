@@ -29,5 +29,10 @@ namespace ConsultaMedica.Api.Models
         [StringLength(50)]
         [Column(TypeName = "Numero Telefone")]
         public string? NumeroTelefone { get; set; }
+
+        [Required]
+        [StringLength(50)]
+        [Column(TypeName = "Consulta")]
+        public IList<ConsultaModel>? Consultas { get; set; }
     }
 }

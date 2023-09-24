@@ -13,6 +13,10 @@ public class ApiDbContext : DbContext
     public DbSet<ConsultaModel>? Consulta { get; set; }
     public DbSet<EspecialidadeModel>? Especialidade { get; set; }
 
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+    {
+        optionsBuilder.UseSqlite("Data Source=DataBase/Consultorio.db");
+    }
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<MedicoModel>()
@@ -87,5 +91,12 @@ public class ApiDbContext : DbContext
             .HasMany(p => p.Consultas)
             .WithOne(c => c.Paciente)
             .HasForeignKey("PacienteId");
+        
+        modelBuilder.Entity<RecepcionistaModel>()
+            .HasMany(r => r.Consultas)
+            .WithOne(c => c.Recepcionista)
+            .HasForeignKey("RecepcionistaId");
+
     }
+
 }
