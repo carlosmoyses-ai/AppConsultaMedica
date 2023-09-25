@@ -1,7 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace ConsultaMedica.Api.Models;
+namespace ConsultaMedica.RazorPages.Models;
 
 [Table("Medico")]
 public class MedicoModel
