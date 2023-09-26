@@ -5,13 +5,14 @@ namespace ConsultaMedica.Api.Data;
 
 public class ApiDbContext : DbContext
 {
-    public ApiDbContext(DbContextOptions<ApiDbContext> options) : base(options) {}
-    
+    public ApiDbContext(DbContextOptions<ApiDbContext> options) : base(options) { }
+
     public DbSet<MedicoModel>? Medico { get; set; }
     public DbSet<PacienteModel>? Paciente { get; set; }
     public DbSet<RecepcionistaModel>? Recepcionista { get; set; }
     public DbSet<ConsultaModel>? Consulta { get; set; }
     public DbSet<EspecialidadeModel>? Especialidade { get; set; }
+    public DbSet<HorarioAtendimentoModel>? HorarioAtendimento { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
@@ -19,84 +20,90 @@ public class ApiDbContext : DbContext
     }
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder.Entity<MedicoModel>()
-            .HasKey(m => m.MedicoId);
-        
-        modelBuilder.Entity<MedicoModel>()
-            .Property(m => m.MedicoId)
-            .ValueGeneratedOnAdd();
-        
-        modelBuilder.Entity<EspecialidadeModel>()
-            .HasKey(e => e.EspecialidadeId);
-        
-        modelBuilder.Entity<EspecialidadeModel>()
-            .Property(e => e.EspecialidadeId)
-            .ValueGeneratedOnAdd();
-        
-        modelBuilder.Entity<PacienteModel>()
-            .HasKey(p => p.PacienteId);
+        // Configurações de tabelas e relacionamentos
 
-        modelBuilder.Entity<PacienteModel>()
-            .Property(p => p.PacienteId)
-            .ValueGeneratedOnAdd();
+        // Mapeamento da Entidade MedicoModel
+        modelBuilder.Entity<MedicoModel>(entity =>
+        {
+            entity.HasKey(e => e.MedicoId);
+            entity.Property(e => e.MedicoNome).IsRequired();
+            entity.Property(e => e.NumeroRegistroProfissional).IsRequired();
 
-        modelBuilder.Entity<RecepcionistaModel>()
-            .HasKey(r => r.RecepcionistaId);
+            // Relacionamento N:M com Especialidades
+            entity.HasMany(e => e.Especialidades)
+                .WithMany(e => e.Medicos)
+                .UsingEntity<Dictionary<string, object>>(
+                    "MedicoEspecialidade",
+                    e => e.HasOne<EspecialidadeModel>()
+                        .WithMany()
+                        .HasForeignKey("EspecialidadeId"),
+                    e => e.HasOne<MedicoModel>()
+                        .WithMany()
+                        .HasForeignKey("MedicoId")
+                );
 
-        modelBuilder.Entity<RecepcionistaModel>()
-            .Property(r => r.RecepcionistaId)
-            .ValueGeneratedOnAdd();
+            // Relacionamento 1:N com Consulta
+            entity.HasMany(e => e.Consultas)
+                .WithOne(e => e.Medico)
+                .HasForeignKey(e => e.MedicoId)
+                .IsRequired();
+        });
 
-        modelBuilder.Entity<ConsultaModel>()
-            .HasKey(c => c.ConsultaId);
+        // Mapeamento da Entidade PacienteModel
+        modelBuilder.Entity<PacienteModel>(entity =>
+        {
+            entity.HasKey(e => e.PacienteId);
+            entity.Property(e => e.PacienteNome).IsRequired();
+            entity.Property(e => e.NumeroIdentificacao).IsRequired();
 
-        modelBuilder.Entity<ConsultaModel>()
-            .Property(c => c.ConsultaId)
-            .ValueGeneratedOnAdd();
+            // Relacionamento 1:N com Consulta
+            entity.HasMany(e => e.Consultas)
+                .WithOne(e => e.Paciente)
+                .HasForeignKey(e => e.PacienteId)
+                .IsRequired();
+        });
 
-        modelBuilder.Entity<ConsultaModel>()
-            .HasOne(c => c.Medico)
-            .WithMany(m => m.Consultas)
-            .HasForeignKey("MedicoId");
-        
-        modelBuilder.Entity<ConsultaModel>()
-            .HasOne(c => c.Paciente)
-            .WithMany(p => p.Consultas)
-            .HasForeignKey("PacienteId");
-        
-        modelBuilder.Entity<MedicoModel>()
-            .HasMany(m => m.Consultas)
-            .WithOne(c => c.Medico)
-            .HasForeignKey("MedicoId");
+        // Mapeamento da Entidade RecepcionistaModel
+        modelBuilder.Entity<RecepcionistaModel>(entity =>
+        {
+            entity.HasKey(e => e.RecepcionistaId);
+            entity.Property(e => e.RecepcionistaNome).IsRequired();
+            entity.Property(e => e.NumeroIdentificacao).IsRequired();
+        });
 
-        modelBuilder.Entity<MedicoModel>()
-            .HasMany(m => m.Especialidades)
-            .WithMany(e => e.Medicos)
-            .UsingEntity<Dictionary<string, object>>(
-                "MedicoEspecialidade",
-                m => m
-                    .HasOne<EspecialidadeModel>()
-                    .WithMany()
-                    .HasForeignKey("EspecialidadeId"),
-                e => e
-                    .HasOne<MedicoModel>()
-                    .WithMany()
-                    .HasForeignKey("MedicoId"),
-                me =>
-                {
-                    me.HasKey("MedicoId", "EspecialidadeId");
-                });
+        // Mapeamento da Entidade ConsultaModel
+        modelBuilder.Entity<ConsultaModel>(entity =>
+        {
+            entity.HasKey(e => e.ConsultaId);
+            entity.Property(e => e.DataHoraInicio).IsRequired();
+            entity.Property(e => e.DataHoraFim).IsRequired();
 
-        modelBuilder.Entity<PacienteModel>()
-            .HasMany(p => p.Consultas)
-            .WithOne(c => c.Paciente)
-            .HasForeignKey("PacienteId");
-        
-        modelBuilder.Entity<RecepcionistaModel>()
-            .HasMany(r => r.Consultas)
-            .WithOne(c => c.Recepcionista)
-            .HasForeignKey("RecepcionistaId");
+            // Relacionamento 1:N com Paciente
+            entity.HasOne(e => e.Paciente)
+                .WithMany(e => e.Consultas)
+                .HasForeignKey(e => e.PacienteId)
+                .IsRequired();
 
+            // Relacionamento 1:N com Médico
+            entity.HasOne(e => e.Medico)
+                .WithMany(e => e.Consultas)
+                .HasForeignKey(e => e.MedicoId)
+                .IsRequired();
+        });
+
+        // Mapeamento da Entidade HorarioAtendimentoModel
+        modelBuilder.Entity<HorarioAtendimentoModel>(entity =>
+        {
+            entity.HasKey(e => e.HorarioAtendimentoId);
+            entity.Property(e => e.HoraInicio).IsRequired();
+            entity.Property(e => e.HoraFim).IsRequired();
+
+            // Relacionamento 1:N com Médico
+            entity.HasOne(e => e.Medico)
+                .WithMany(e => e.HorariosAtendimento)
+                .HasForeignKey(e => e.MedicoId)
+                .IsRequired();
+        });
     }
-
 }
+

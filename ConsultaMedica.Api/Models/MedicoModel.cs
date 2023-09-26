@@ -1,10 +1,8 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Text.Json.Serialization;
 
 namespace ConsultaMedica.Api.Models;
 
-[Table("Medico")]
 public class MedicoModel
 {
     [Key]
@@ -15,7 +13,7 @@ public class MedicoModel
     public int EspecialidadeId { get; set; }
 
     // Relacionamento com Especialidade
-    public EspecialidadeModel? Especialidade { get; set; }
+    public List<EspecialidadeModel>? Especialidades { get; set; }
 
     // Lista de Consultas agendadas com este médico
     public List<ConsultaModel>? Consultas { get; set; }

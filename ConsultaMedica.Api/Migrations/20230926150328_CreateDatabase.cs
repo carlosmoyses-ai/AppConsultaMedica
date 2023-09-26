@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace ConsultaMedica.Api.Migrations
 {
     /// <inheritdoc />
-    public partial class CriarDataBase : Migration
+    public partial class CreateDatabase : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -17,8 +17,8 @@ namespace ConsultaMedica.Api.Migrations
                 {
                     EspecialidadeId = table.Column<int>(type: "INTEGER", nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
-                    EspecialidadeNome = table.Column<string>(type: "Especialidade", maxLength: 50, nullable: false),
-                    DescricaoEspecialidade = table.Column<string>(type: "Descricao Especialidade", maxLength: 500, nullable: false)
+                    EspecialidadeNome = table.Column<string>(type: "TEXT", nullable: true),
+                    EspecialidadeDescricao = table.Column<string>(type: "TEXT", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -31,9 +31,9 @@ namespace ConsultaMedica.Api.Migrations
                 {
                     MedicoId = table.Column<int>(type: "INTEGER", nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
-                    MedicoNome = table.Column<string>(type: "Nome", maxLength: 50, nullable: false),
-                    NumeroRegistroProfisional = table.Column<string>(type: "Numero Registro Profissional", maxLength: 50, nullable: false),
-                    HorariosAtendimento = table.Column<byte[]>(type: "Horarios Atendimento", maxLength: 50, nullable: false)
+                    MedicoNome = table.Column<string>(type: "TEXT", nullable: false),
+                    NumeroRegistroProfissional = table.Column<string>(type: "TEXT", nullable: false),
+                    EspecialidadeId = table.Column<int>(type: "INTEGER", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -46,10 +46,9 @@ namespace ConsultaMedica.Api.Migrations
                 {
                     PacienteId = table.Column<int>(type: "INTEGER", nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
-                    PacienteNome = table.Column<string>(type: "Nome", maxLength: 50, nullable: false),
-                    PacienteSobrenome = table.Column<string>(type: "Sobrenome", maxLength: 50, nullable: false),
-                    NumeroIdentificacao = table.Column<string>(type: "Numero Identificacao", maxLength: 50, nullable: false),
-                    HistoricoClinico = table.Column<string>(type: "Historico Clinico", maxLength: 50, nullable: false)
+                    PacienteNome = table.Column<string>(type: "TEXT", nullable: false),
+                    NumeroIdentificacao = table.Column<string>(type: "TEXT", nullable: false),
+                    HistoricoMedico = table.Column<string>(type: "TEXT", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -62,10 +61,10 @@ namespace ConsultaMedica.Api.Migrations
                 {
                     RecepcionistaId = table.Column<int>(type: "INTEGER", nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
-                    RecepcionistaNome = table.Column<string>(type: "Nome", maxLength: 50, nullable: false),
-                    RecepcionistaSobrenome = table.Column<string>(type: "Sobrenome", maxLength: 50, nullable: false),
-                    NumeroIdentificacao = table.Column<string>(type: "Numero Identificacao", maxLength: 50, nullable: false),
-                    NumeroTelefone = table.Column<string>(type: "Numero Telefone", maxLength: 50, nullable: false)
+                    RecepcionistaNome = table.Column<string>(type: "TEXT", nullable: false),
+                    RecepcionistaSobrenome = table.Column<string>(type: "TEXT", nullable: true),
+                    NumeroIdentificacao = table.Column<string>(type: "TEXT", nullable: false),
+                    NumeroTelefone = table.Column<string>(type: "TEXT", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -73,15 +72,37 @@ namespace ConsultaMedica.Api.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "MedicoEspecialidade",
+                name: "HorarioAtendimento",
                 columns: table => new
                 {
-                    MedicoId = table.Column<int>(type: "INTEGER", nullable: false),
-                    EspecialidadeId = table.Column<int>(type: "INTEGER", nullable: false)
+                    HorarioAtendimentoId = table.Column<int>(type: "INTEGER", nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
+                    DiaSemana = table.Column<int>(type: "INTEGER", nullable: false),
+                    HoraInicio = table.Column<DateTime>(type: "TEXT", nullable: false),
+                    HoraFim = table.Column<DateTime>(type: "TEXT", nullable: false),
+                    MedicoId = table.Column<int>(type: "INTEGER", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_MedicoEspecialidade", x => new { x.MedicoId, x.EspecialidadeId });
+                    table.PrimaryKey("PK_HorarioAtendimento", x => x.HorarioAtendimentoId);
+                    table.ForeignKey(
+                        name: "FK_HorarioAtendimento_Medico_MedicoId",
+                        column: x => x.MedicoId,
+                        principalTable: "Medico",
+                        principalColumn: "MedicoId",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "MedicoEspecialidade",
+                columns: table => new
+                {
+                    EspecialidadeId = table.Column<int>(type: "INTEGER", nullable: false),
+                    MedicoId = table.Column<int>(type: "INTEGER", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_MedicoEspecialidade", x => new { x.EspecialidadeId, x.MedicoId });
                     table.ForeignKey(
                         name: "FK_MedicoEspecialidade_Especialidade_EspecialidadeId",
                         column: x => x.EspecialidadeId,
@@ -102,12 +123,13 @@ namespace ConsultaMedica.Api.Migrations
                 {
                     ConsultaId = table.Column<int>(type: "INTEGER", nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
-                    DataConsulta = table.Column<DateTime>(type: "Data Consulta", nullable: false),
-                    TipoConsulta = table.Column<string>(type: "Tipo Consulta", maxLength: 50, nullable: false),
-                    Observacoes = table.Column<string>(type: "Observacoes", maxLength: 500, nullable: false),
-                    PacienteId = table.Column<int>(type: "INTEGER", nullable: false),
                     MedicoId = table.Column<int>(type: "INTEGER", nullable: false),
-                    RecepcionistaId = table.Column<int>(type: "INTEGER", nullable: false)
+                    PacienteId = table.Column<int>(type: "INTEGER", nullable: false),
+                    DataHoraInicio = table.Column<DateTime>(type: "TEXT", nullable: false),
+                    DataHoraFim = table.Column<DateTime>(type: "TEXT", nullable: false),
+                    TipoConsulta = table.Column<int>(type: "INTEGER", nullable: false),
+                    Observacoes = table.Column<string>(type: "TEXT", nullable: true),
+                    RecepcionistaModelRecepcionistaId = table.Column<int>(type: "INTEGER", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -125,11 +147,10 @@ namespace ConsultaMedica.Api.Migrations
                         principalColumn: "PacienteId",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_Consulta_Recepcionista_RecepcionistaId",
-                        column: x => x.RecepcionistaId,
+                        name: "FK_Consulta_Recepcionista_RecepcionistaModelRecepcionistaId",
+                        column: x => x.RecepcionistaModelRecepcionistaId,
                         principalTable: "Recepcionista",
-                        principalColumn: "RecepcionistaId",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "RecepcionistaId");
                 });
 
             migrationBuilder.CreateIndex(
@@ -143,14 +164,19 @@ namespace ConsultaMedica.Api.Migrations
                 column: "PacienteId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Consulta_RecepcionistaId",
+                name: "IX_Consulta_RecepcionistaModelRecepcionistaId",
                 table: "Consulta",
-                column: "RecepcionistaId");
+                column: "RecepcionistaModelRecepcionistaId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_MedicoEspecialidade_EspecialidadeId",
+                name: "IX_HorarioAtendimento_MedicoId",
+                table: "HorarioAtendimento",
+                column: "MedicoId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_MedicoEspecialidade_MedicoId",
                 table: "MedicoEspecialidade",
-                column: "EspecialidadeId");
+                column: "MedicoId");
         }
 
         /// <inheritdoc />
@@ -158,6 +184,9 @@ namespace ConsultaMedica.Api.Migrations
         {
             migrationBuilder.DropTable(
                 name: "Consulta");
+
+            migrationBuilder.DropTable(
+                name: "HorarioAtendimento");
 
             migrationBuilder.DropTable(
                 name: "MedicoEspecialidade");
