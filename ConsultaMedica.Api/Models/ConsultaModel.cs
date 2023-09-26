@@ -1,40 +1,24 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using ConsultaMedica.Api.Models.Enums;
 
-namespace ConsultaMedica.Api.Models;
-
-[Table("Consulta")]
-public class ConsultaModel
+namespace ConsultaMedica.Api.Models
 {
-    [Key]
-    [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-    public int ConsultaId { get; set; }
+    public class ConsultaModel
+    {
+        [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        public int ConsultaId { get; set; }
+        public int MedicoId { get; set; }
+        public int PacienteId { get; set; }
+        public DateTime DataHoraInicio { get; set; }
+        public DateTime DataHoraFim { get; set; }
+        public TipoConsultaEnum TipoConsulta { get; set; }
+        public string? Observacoes { get; set; }
 
-    [Required]
-    [DisplayFormat(DataFormatString = "{0:dd/MM/yyyy}", ApplyFormatInEditMode = true)]
-    [DataType(DataType.Date)]
-    [Column(TypeName = "Data Consulta")]
-    public DateTime DataConsulta { get; set; }
-    
-    [Required]
-    [StringLength(50)]
-    [Column(TypeName = "Tipo Consulta")]
-    public string? TipoConsulta { get; set; }
+        // Relacionamento com Médico
+        public MedicoModel? Medico { get; set; }
 
-    [Required]
-    [StringLength(500)]
-    [Column(TypeName = "Observacoes")]
-    public string? Observacoes { get; set; }
-
-    [Required]
-    [Column(TypeName = "Paciente")]
-    public PacienteModel? Paciente { get; set; }
-
-    [Required]
-    [Column(TypeName = "Medico")]
-    public MedicoModel? Medico { get; set; }
-
-    [Required]
-    [Column(TypeName = "Recepcionista")]
-    public RecepcionistaModel? Recepcionista { get; set; }
+        // Relacionamento com Paciente
+        public PacienteModel? Paciente { get; set; }
+    }
 }

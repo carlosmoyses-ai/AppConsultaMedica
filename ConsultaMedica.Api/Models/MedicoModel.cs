@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 
 namespace ConsultaMedica.Api.Models;
 
@@ -9,27 +10,16 @@ public class MedicoModel
     [Key]
     [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
     public int MedicoId { get; set; }
-
-    [Required]
-    [StringLength(50)]
-    [Column(TypeName = "Nome")]
     public string? MedicoNome { get; set; }
+    public string? NumeroRegistroProfissional { get; set; }
+    public int EspecialidadeId { get; set; }
 
-    [Required]
-    [StringLength(50)]
-    [Column(TypeName = "Numero Registro Profissional")]
-    public string? NumeroRegistroProfisional { get; set; }
+    // Relacionamento com Especialidade
+    public EspecialidadeModel? Especialidade { get; set; }
 
-    [Required]
-    [StringLength(50)]
-    [Column(TypeName = "Horarios Atendimento")]
-    public List<DateTime>? HorariosAtendimento { get; set; }
+    // Lista de Consultas agendadas com este médico
+    public List<ConsultaModel>? Consultas { get; set; }
 
-    [Required]
-    [Column(TypeName = "Especialidades")]
-    public IList<EspecialidadeModel>? Especialidades { get; set; }
-
-    [Required]
-    [Column(TypeName = "Consultas")]
-    public IList<ConsultaModel>? Consultas { get; set; }
+    // Lista de Horários Disponíveis deste médico
+    public List<HorarioAtendimentoModel>? HorariosAtendimento { get; set; }
 }
